@@ -4,7 +4,9 @@
 
 void yyerror(const char *s);
 int yylex(void);
+void yyrestart(FILE* f); // 显式声明 yyrestart
 
+extern int yylineno;     // 核心：告诉 Bison 这个变量在 Flex 那边定义了
 struct Node* root = NULL; // 语法树的根节点
 %}
 
@@ -20,7 +22,7 @@ struct Node* root = NULL; // 语法树的根节点
 %token <node> LP RP LB RB LC RC
 
 /* 声明非终结符的类型 */
-%type <node> Program ExtDefList ExtDef Specifier FunDec VarList ParamDec CompSt StmtList Stmt Exp Args
+%type <node> Program ExtDefList ExtDef Specifier FunDec VarList ParamDec CompSt StmtList Stmt Exp Args DefList Def DecList Dec
 
 /* 优先级定义：解决加减乘除以及赋值的冲突 */
 %right ASSIGNOP
@@ -86,9 +88,38 @@ ParamDec : Specifier ID {
 ;
 
 /* 4. 复合语句与常规语句 */
-CompSt : LC StmtList RC {
+CompSt : LC DefList StmtList RC {
     $$ = create_node("CompSt", @$.first_line, NODE_SYNTAX, NULL);
-    insert_child($$, $2);
+    insert_child($$, $2); insert_child($$, $3);
+}
+;
+
+DefList : /* 空 */ { $$ = NULL; }
+    | Def DefList {
+        $$ = create_node("DefList", @$.first_line, NODE_SYNTAX, NULL);
+        insert_child($$, $1); insert_child($$, $2);
+    }
+    ;
+
+Def : Specifier DecList SEMI {
+    $$ = create_node("Def", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2);
+}
+;
+
+DecList : Dec { $$ = $1; }
+    | Dec COMMA DecList {
+        $$ = create_node("DecList", @$.first_line, NODE_SYNTAX, NULL);
+        insert_child($$, $1); insert_child($$, $3);
+    }
+    ;
+
+Dec : ID {
+    $$ = create_node("Dec", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
+}
+| ID ASSIGNOP Exp {
+    $$ = create_node("Dec", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
 }
 ;
 
@@ -105,6 +136,13 @@ Stmt : Exp SEMI {
 | RETURN Exp SEMI {
     $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL); 
     insert_child($$, $1); insert_child($$, $2);
+}
+| IF LP Exp RP Stmt {
+    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $3); insert_child($$, $5);
+}
+| CompSt {
+    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
 ;
 
@@ -126,6 +164,19 @@ Exp : Exp ASSIGNOP Exp {
 }
 | INT {
     $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
+}
+| Exp RELOP Exp {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+;
+
+Args : Exp {
+    $$ = create_node("Args", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
+}
+| Exp COMMA Args {
+    $$ = create_node("Args", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $3);
 }
 ;
 

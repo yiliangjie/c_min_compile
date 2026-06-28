@@ -1,21 +1,25 @@
-# 编译器和工具定义
 CC = gcc
-CFLAGS = -Wall -Wno-unused-function -g
-LEX = flex
-YACC = bison
-
-# 目标文件
-TARGET = compiler
+CFLAGS = -Wall -g
 SRC_DIR = src
+TARGET = compiler
 
-# 伪目标
+OBJS = $(SRC_DIR)/syntax.tab.o $(SRC_DIR)/lex.yy.o $(SRC_DIR)/tree.o
+
 all: $(TARGET)
 
-$(TARGET): $(SRC_DIR)/lexical.l
-	$(LEX) -o $(SRC_DIR)/lex.yy.c $(SRC_DIR)/lexical.l
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC_DIR)/lex.yy.c
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+
+$(SRC_DIR)/syntax.tab.c $(SRC_DIR)/syntax.tab.h: $(SRC_DIR)/syntax.y
+	bison -d -o $(SRC_DIR)/syntax.tab.c $(SRC_DIR)/syntax.y
+
+$(SRC_DIR)/lex.yy.c: $(SRC_DIR)/lexical.l $(SRC_DIR)/syntax.tab.h
+	flex -o $(SRC_DIR)/lex.yy.c $(SRC_DIR)/lexical.l
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(TARGET) $(SRC_DIR)/lex.yy.c
+	rm -f $(TARGET) $(SRC_DIR)/*.o $(SRC_DIR)/lex.yy.c $(SRC_DIR)/syntax.tab.c $(SRC_DIR)/syntax.tab.h
 
 .PHONY: all clean

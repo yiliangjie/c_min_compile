@@ -163,8 +163,27 @@ extern FILE *yyin, *yyout;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
     
-    #define YY_LESS_LINENO(n)
-    #define YY_LINENO_REWIND_TO(ptr)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex.
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
+    #define YY_LINENO_REWIND_TO(dst) \
+            do {\
+                const char *p;\
+                for ( p = yy_cp-1; p >= (dst); --p)\
+                    if ( *p == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -468,6 +487,12 @@ static const flex_int16_t yy_chk[118] =
        65,   65,   65,   65,   65,   65,   65
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static const flex_int32_t yy_rule_can_match_eol[32] =
+    {   0,
+1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
@@ -484,21 +509,16 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "src/lexical.l"
 #line 2 "src/lexical.l"
-#include <stdio.h>
-#include <stdlib.h>
+#include "tree.h"
+#include "syntax.tab.h" // 此时由 Bison 自动生成此头文件
 
-/* 在单独进行词法分析阶段，我们用 enum 临时替代 Bison 生成的 Token 编号 */
-enum TokenType {
-    TYPE = 258, STRUCT, RETURN, IF, ELSE, WHILE,
-    INT, FLOAT, ID, SEMI, COMMA, ASSIGNOP, RELOP,
-    PLUS, MINUS, STAR, DIV, AND, OR, DOT, NOT,
-    LP, RP, LB, RB, LC, RC
-};
+extern int yylineno;
 
-extern int yylineno; // 显式维护行号，用于错误处理
-#line 500 "src/lex.yy.c"
-/* 正则表达式定义 */
-#line 502 "src/lex.yy.c"
+// 辅助宏：帮我们把 Flex 抓到的文字打包成树节点传递给 Bison
+#define SAVE_NODE(name) yylval.node = create_node(#name, yylineno, NODE_TOKEN, yytext)
+#line 520 "src/lex.yy.c"
+/* 让 Flex 自动追踪行号位置 */
+#line 522 "src/lex.yy.c"
 
 #define INITIAL 0
 
@@ -715,9 +735,9 @@ YY_DECL
 		}
 
 	{
-#line 22 "src/lexical.l"
+#line 19 "src/lexical.l"
 
-#line 721 "src/lex.yy.c"
+#line 741 "src/lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -763,6 +783,16 @@ yy_find_action:
 
 		YY_DO_BEFORE_ACTION;
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			int yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					
+    yylineno++;
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
@@ -777,160 +807,160 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 23 "src/lexical.l"
-{ yylineno++; }
+#line 20 "src/lexical.l"
+{ /* %option yylineno 会自动处理，这里不写 */ }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 24 "src/lexical.l"
+#line 21 "src/lexical.l"
 { /* 忽略空白符 */ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 26 "src/lexical.l"
-{ printf("%s\t: TYPE\n", yytext); return TYPE; }
+#line 23 "src/lexical.l"
+{ SAVE_NODE(TYPE); return TYPE; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 27 "src/lexical.l"
-{ printf("%s\t: STRUCT\n", yytext); return STRUCT; }
+#line 24 "src/lexical.l"
+{ SAVE_NODE(STRUCT); return STRUCT; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 28 "src/lexical.l"
-{ printf("%s\t: RETURN\n", yytext); return RETURN; }
+#line 25 "src/lexical.l"
+{ SAVE_NODE(RETURN); return RETURN; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 29 "src/lexical.l"
-{ printf("%s\t: IF\n", yytext); return IF; }
+#line 26 "src/lexical.l"
+{ SAVE_NODE(IF); return IF; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 30 "src/lexical.l"
-{ printf("%s\t: ELSE\n", yytext); return ELSE; }
+#line 27 "src/lexical.l"
+{ SAVE_NODE(ELSE); return ELSE; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 31 "src/lexical.l"
-{ printf("%s\t: WHILE\n", yytext); return WHILE; }
+#line 28 "src/lexical.l"
+{ SAVE_NODE(WHILE); return WHILE; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 33 "src/lexical.l"
-{ printf("%s\t: ID\n", yytext); return ID; }
+#line 30 "src/lexical.l"
+{ SAVE_NODE(ID); return ID; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 34 "src/lexical.l"
-{ printf("%s\t: INT\n", yytext); return INT; }
+#line 31 "src/lexical.l"
+{ SAVE_NODE(INT); return INT; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 35 "src/lexical.l"
-{ printf("%s\t: FLOAT\n", yytext); return FLOAT; }
+#line 32 "src/lexical.l"
+{ SAVE_NODE(FLOAT); return FLOAT; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 37 "src/lexical.l"
-{ printf("%s\t: SEMI\n", yytext); return SEMI; }
+#line 34 "src/lexical.l"
+{ SAVE_NODE(SEMI); return SEMI; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 38 "src/lexical.l"
-{ printf("%s\t: COMMA\n", yytext); return COMMA; }
+#line 35 "src/lexical.l"
+{ SAVE_NODE(COMMA); return COMMA; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 39 "src/lexical.l"
-{ printf("%s\t: ASSIGNOP\n", yytext); return ASSIGNOP; }
+#line 36 "src/lexical.l"
+{ SAVE_NODE(ASSIGNOP); return ASSIGNOP; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 40 "src/lexical.l"
-{ printf("%s\t: RELOP\n", yytext); return RELOP; }
+#line 37 "src/lexical.l"
+{ SAVE_NODE(RELOP); return RELOP; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 41 "src/lexical.l"
-{ printf("%s\t: PLUS\n", yytext); return PLUS; }
+#line 38 "src/lexical.l"
+{ SAVE_NODE(PLUS); return PLUS; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 42 "src/lexical.l"
-{ printf("%s\t: MINUS\n", yytext); return MINUS; }
+#line 39 "src/lexical.l"
+{ SAVE_NODE(MINUS); return MINUS; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 43 "src/lexical.l"
-{ printf("%s\t: STAR\n", yytext); return STAR; }
+#line 40 "src/lexical.l"
+{ SAVE_NODE(STAR); return STAR; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 44 "src/lexical.l"
-{ printf("%s\t: DIV\n", yytext); return DIV; }
+#line 41 "src/lexical.l"
+{ SAVE_NODE(DIV); return DIV; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 45 "src/lexical.l"
-{ printf("%s\t: AND\n", yytext); return AND; }
+#line 42 "src/lexical.l"
+{ SAVE_NODE(AND); return AND; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 46 "src/lexical.l"
-{ printf("%s\t: OR\n", yytext); return OR; }
+#line 43 "src/lexical.l"
+{ SAVE_NODE(OR); return OR; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 47 "src/lexical.l"
-{ printf("%s\t: DOT\n", yytext); return DOT; }
+#line 44 "src/lexical.l"
+{ SAVE_NODE(DOT); return DOT; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 48 "src/lexical.l"
-{ printf("%s\t: NOT\n", yytext); return NOT; }
+#line 45 "src/lexical.l"
+{ SAVE_NODE(NOT); return NOT; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 49 "src/lexical.l"
-{ printf("%s\t: LP\n", yytext); return LP; }
+#line 46 "src/lexical.l"
+{ SAVE_NODE(LP); return LP; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 50 "src/lexical.l"
-{ printf("%s\t: RP\n", yytext); return RP; }
+#line 47 "src/lexical.l"
+{ SAVE_NODE(RP); return RP; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 51 "src/lexical.l"
-{ printf("%s\t: LB\n", yytext); return LB; }
+#line 48 "src/lexical.l"
+{ SAVE_NODE(LB); return LB; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 52 "src/lexical.l"
-{ printf("%s\t: RB\n", yytext); return RB; }
+#line 49 "src/lexical.l"
+{ SAVE_NODE(RB); return RB; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 53 "src/lexical.l"
-{ printf("%s\t: LC\n", yytext); return LC; }
+#line 50 "src/lexical.l"
+{ SAVE_NODE(LC); return LC; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 54 "src/lexical.l"
-{ printf("%s\t: RC\n", yytext); return RC; }
+#line 51 "src/lexical.l"
+{ SAVE_NODE(RC); return RC; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 56 "src/lexical.l"
+#line 53 "src/lexical.l"
 { printf("Error type A at Line %d: Mysterious characters \'%s\'\n", yylineno, yytext); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 58 "src/lexical.l"
+#line 55 "src/lexical.l"
 ECHO;
 	YY_BREAK
-#line 934 "src/lex.yy.c"
+#line 964 "src/lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1298,6 +1328,10 @@ static int yy_get_next_buffer (void)
 
 	*--yy_cp = (char) c;
 
+    if ( c == '\n' ){
+        --yylineno;
+    }
+
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -1374,6 +1408,11 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	if ( c == '\n' )
+		
+    yylineno++;
+;
 
 	return c;
 }
@@ -1841,6 +1880,9 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
+    /* We do not touch yylineno unless the option is enabled. */
+    yylineno =  1;
+    
     (yy_buffer_stack) = NULL;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
@@ -1935,20 +1977,9 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 58 "src/lexical.l"
+#line 55 "src/lexical.l"
 
 
 int yywrap() {
     return 1;
-}
-
-int main(int argc, char** argv) {
-    if (argc > 1) {
-        if (!(yyin = fopen(argv[1], "r"))) {
-            perror(argv[1]);
-            return 1;
-        }
-    }
-    while (yylex() != 0); // 循环调用词法分析，直到文件结束
-    return 0;
 }
