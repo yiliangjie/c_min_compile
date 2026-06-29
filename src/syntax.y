@@ -4,42 +4,44 @@
 
 void yyerror(const char *s);
 int yylex(void);
-void yyrestart(FILE* f); // 显式声明 yyrestart
+void yyrestart(FILE* f);
 
-extern int yylineno;     // 核心：告诉 Bison 这个变量在 Flex 那边定义了
-struct Node* root = NULL; // 语法树的根节点
+extern int yylineno;
+struct Node* root = NULL; // 语法树根节点
 %}
 
-/* 声明用到的联合体类型，也就是节点在 Bison 内部的代号 */
 %union {
     struct Node* node;
 }
 
-/* 声明所有从 Flex 传过来的终结符 (Token) */
-%token <node> TYPE STRUCT RETURN IF ELSE WHILE
+/* 终结符声明 */
+%token <node> TYPE STRUCT RETURN IF ELSE WHILE BREAK CONTINUE
 %token <node> INT FLOAT ID SEMI COMMA ASSIGNOP RELOP
 %token <node> PLUS MINUS STAR DIV AND OR DOT NOT
 %token <node> LP RP LB RB LC RC
 
-/* 声明非终结符的类型 */
-%type <node> Program ExtDefList ExtDef Specifier FunDec VarList ParamDec CompSt StmtList Stmt Exp Args DefList Def DecList Dec
+/* 非终结符声明 */
+%type <node> Program ExtDefList ExtDef Specifier FunDec VarList ParamDec CompSt StmtList Stmt Exp Args DefList Def DecList Dec VarDec
 
-/* 优先级定义：解决加减乘除以及赋值的冲突 */
+/* 优先级定义 (解决移进-规约冲突，按从低到高排列) */
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 %right ASSIGNOP
 %left OR
 %left AND
 %left RELOP
 %left PLUS MINUS
 %left STAR DIV
-%right NOT
+%right NOT UMINUS
+%left LP RP LB RB DOT
 
 %%
 
-/* 1. 整个程序的入口 */
+/* 1. 顶层结构 */
 Program : ExtDefList { 
     $$ = create_node("Program", @$.first_line, NODE_SYNTAX, NULL); 
     insert_child($$, $1); 
-    root = $$; // 挂载根节点
+    root = $$; 
 }
 ;
 
@@ -50,7 +52,6 @@ ExtDefList : /* 空 */ { $$ = NULL; }
     }
     ;
 
-/* 2. 外部定义 (这里最基础的：函数定义) */
 ExtDef : Specifier FunDec CompSt {
     $$ = create_node("ExtDef", @$.first_line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
@@ -63,34 +64,34 @@ Specifier : TYPE {
 }
 ;
 
-/* 3. 函数头与参数 */
+/* 2. 函数与参数 */
 FunDec : ID LP VarList RP {
     $$ = create_node("FunDec", @$.first_line, NODE_SYNTAX, NULL);
-    insert_child($$, $1); insert_child($$, $3);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4);
 }
 | ID LP RP {
     $$ = create_node("FunDec", @$.first_line, NODE_SYNTAX, NULL);
-    insert_child($$, $1);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
 }
 ;
 
-VarList : ParamDec { $$ = $1; }
+VarList : ParamDec { $$ = create_node("VarList", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1); }
     | ParamDec COMMA VarList {
         $$ = create_node("VarList", @$.first_line, NODE_SYNTAX, NULL);
-        insert_child($$, $1); insert_child($$, $3);
+        insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
     }
     ;
 
-ParamDec : Specifier ID {
+ParamDec : Specifier VarDec {
     $$ = create_node("ParamDec", @$.first_line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2);
 }
 ;
 
-/* 4. 复合语句与常规语句 */
+/* 3. 复合语句与局部定义 (支持数组和普通变量) */
 CompSt : LC DefList StmtList RC {
     $$ = create_node("CompSt", @$.first_line, NODE_SYNTAX, NULL);
-    insert_child($$, $2); insert_child($$, $3);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4);
 }
 ;
 
@@ -103,26 +104,36 @@ DefList : /* 空 */ { $$ = NULL; }
 
 Def : Specifier DecList SEMI {
     $$ = create_node("Def", @$.first_line, NODE_SYNTAX, NULL);
-    insert_child($$, $1); insert_child($$, $2);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
 }
 ;
 
-DecList : Dec { $$ = $1; }
+DecList : Dec { $$ = create_node("DecList", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1); }
     | Dec COMMA DecList {
         $$ = create_node("DecList", @$.first_line, NODE_SYNTAX, NULL);
-        insert_child($$, $1); insert_child($$, $3);
+        insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
     }
     ;
 
-Dec : ID {
+Dec : VarDec {
     $$ = create_node("Dec", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
-| ID ASSIGNOP Exp {
+| VarDec ASSIGNOP Exp {
     $$ = create_node("Dec", @$.first_line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
 }
 ;
 
+VarDec : ID {
+    $$ = create_node("VarDec", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
+}
+| VarDec LB INT RB {
+    $$ = create_node("VarDec", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4);
+}
+;
+
+/* 4. 语句 (Stmt) */
 StmtList : /* 空 */ { $$ = NULL; }
     | Stmt StmtList {
         $$ = create_node("StmtList", @$.first_line, NODE_SYNTAX, NULL);
@@ -131,23 +142,52 @@ StmtList : /* 空 */ { $$ = NULL; }
     ;
 
 Stmt : Exp SEMI {
-    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
-}
-| RETURN Exp SEMI {
     $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL); 
     insert_child($$, $1); insert_child($$, $2);
-}
-| IF LP Exp RP Stmt {
-    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL);
-    insert_child($$, $1); insert_child($$, $3); insert_child($$, $5);
 }
 | CompSt {
     $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
+| RETURN Exp SEMI {
+    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL); 
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {
+    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4); insert_child($$, $5);
+}
+| IF LP Exp RP Stmt ELSE Stmt {
+    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4); insert_child($$, $5); insert_child($$, $6); insert_child($$, $7);
+}
+| WHILE LP Exp RP Stmt {
+    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4); insert_child($$, $5);
+}
+| BREAK SEMI {
+    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2);
+}
+| CONTINUE SEMI {
+    $$ = create_node("Stmt", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2);
+}
 ;
 
-/* 5. 表达式 (核心计算逻辑) */
+/* 5. 表达式 (Exp) */
 Exp : Exp ASSIGNOP Exp {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| Exp AND Exp {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| Exp OR Exp {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| Exp RELOP Exp {
     $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
 }
@@ -155,9 +195,41 @@ Exp : Exp ASSIGNOP Exp {
     $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
 }
+| Exp MINUS Exp {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
 | Exp STAR Exp {
     $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| Exp DIV Exp {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| LP Exp RP {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| MINUS Exp %prec UMINUS {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2);
+}
+| NOT Exp {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2);
+}
+| ID LP Args RP {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4);
+}
+| ID LP RP {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| Exp LB Exp RB {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4);
 }
 | ID {
     $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
@@ -165,18 +237,18 @@ Exp : Exp ASSIGNOP Exp {
 | INT {
     $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
-| Exp RELOP Exp {
-    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL);
-    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+| FLOAT {
+    $$ = create_node("Exp", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
 ;
 
-Args : Exp {
-    $$ = create_node("Args", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
-}
-| Exp COMMA Args {
+/* 函数调用参数 */
+Args : Exp COMMA Args {
     $$ = create_node("Args", @$.first_line, NODE_SYNTAX, NULL);
-    insert_child($$, $1); insert_child($$, $3);
+    insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
+}
+| Exp {
+    $$ = create_node("Args", @$.first_line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
 ;
 
@@ -186,7 +258,6 @@ void yyerror(const char *s) {
     fprintf(stderr, "Error type B at Line %d: %s\n", yylineno, s);
 }
 
-// 主函数：读取文件，调用解析，打印树
 int main(int argc, char** argv) {
     if (argc > 1) {
         FILE* f = fopen(argv[1], "r");
@@ -194,7 +265,7 @@ int main(int argc, char** argv) {
         yyrestart(f);
     }
     yylineno = 1;
-    yyparse(); // 启动 Bison 语法分析
+    yyparse(); 
     if (root != NULL) {
         printf("--- 抽象语法树 (AST) ---\n");
         print_tree(root, 0);

@@ -34,23 +34,36 @@ void insert_child(struct Node* parent, struct Node* child) {
 }
 
 // 递归打印整棵树，depth 用来控制缩进
-void print_tree(struct Node* root, int depth) {
-    if (root == NULL) return;
-    
-    // 打印缩进
-    for (int i = 0; i < depth; i++) printf("  ");
-    
-    // 根据节点类型打印不同格式
-    if (root->type == NODE_SYNTAX) {
-        printf("%s (%d)\n", root->name, root->line);
-    } else {
-        if (strcmp(root->name, "ID") == 0) printf("ID: %s\n", root->val_str);
-        else if (strcmp(root->name, "INT") == 0) printf("INT: %d\n", root->val_int);
-        else if (strcmp(root->name, "FLOAT") == 0) printf("FLOAT: %f\n", root->val_float);
-        else printf("%s\n", root->name);
+void print_tree(struct Node* node, int depth) {
+    if (node == NULL) return;
+
+    // 1. 打印缩进，让层次感更强（你可以把两个空格换成 "|- " 看起来更酷）
+    for (int i = 0; i < depth; i++) {
+        printf("  "); 
     }
-    
-    // 先遍历孩子（深入下一层），再遍历兄弟（同层遍历）
-    print_tree(root->child, depth + 1);
-    print_tree(root->brother, depth);
+
+    // 2. 根据节点类型智能打印
+    if (node->type == NODE_SYNTAX) {
+        // 语法非终结符：打印名字和所在行号
+        printf("%s (%d)\n", node->name, node->line);
+    } 
+    else if (node->type == NODE_TOKEN) {
+        // 词法终结符：判断是否需要打印具体的值
+        if (strcmp(node->name, "ID") == 0 ||
+            strcmp(node->name, "TYPE") == 0 ||
+            strcmp(node->name, "RELOP") == 0 ||
+            strcmp(node->name, "INT") == 0 ||
+            strcmp(node->name, "FLOAT") == 0) {
+            
+            // 打印带具体值的 Token，例如: "TYPE: int"
+            printf("%s: %s\n", node->name, node->val_str);
+        } else {
+            // 其他没有具体值的 Token (比如 IF, WHILE, PLUS, LC)，直接打印名字即可
+            printf("%s\n", node->name);
+        }
+    }
+
+    // 3. 递归打印孩子和兄弟
+    print_tree(node->child, depth + 1);
+    print_tree(node->brother, depth);
 }

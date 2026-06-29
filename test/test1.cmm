@@ -1,6 +1,14 @@
-int main() {
-    int a = 10;
-    if (a > 5) {
-        return a;
+void test_func() {
+    float b = 3.14;
+    int arr[10];
+    arr[0] = -5;
+    
+    while (!(arr[0] > 0)) {
+        if (arr[0] == -5) {
+            arr[0] = arr[0] + 10 / 2;
+            continue;
+        } else {
+            break;
+        }
     }
 }

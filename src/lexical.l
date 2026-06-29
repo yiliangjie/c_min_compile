@@ -1,10 +1,10 @@
 %{
 #include "tree.h"
-#include "syntax.tab.h" // 此时由 Bison 自动生成此头文件
+#include "syntax.tab.h" // 由 Bison 自动生成的头文件
 
 extern int yylineno;
 
-// 辅助宏：帮我们把 Flex 抓到的文字打包成树节点传递给 Bison
+// 辅助宏：将 Flex 抓到的文字打包成树节点传递给 Bison
 #define SAVE_NODE(name) yylval.node = create_node(#name, yylineno, NODE_TOKEN, yytext)
 %}
 
@@ -17,15 +17,17 @@ id          {letter}({letter}|{digit})*
 relop       ">="|"<="|"=="|"!="|">"|"<"
 
 %%
-"\n"            { /* %option yylineno 会自动处理，这里不写 */ }
+"\n"            { /* 自动处理行号，留空 */ }
 [ \t\r]+        { /* 忽略空白符 */ }
 
-"int"|"float"   { SAVE_NODE(TYPE); return TYPE; }
+"int"|"float"|"void" { SAVE_NODE(TYPE); return TYPE; }
 "struct"        { SAVE_NODE(STRUCT); return STRUCT; }
 "return"        { SAVE_NODE(RETURN); return RETURN; }
 "if"            { SAVE_NODE(IF); return IF; }
 "else"          { SAVE_NODE(ELSE); return ELSE; }
 "while"         { SAVE_NODE(WHILE); return WHILE; }
+"break"         { SAVE_NODE(BREAK); return BREAK; }
+"continue"      { SAVE_NODE(CONTINUE); return CONTINUE; }
 
 {id}            { SAVE_NODE(ID); return ID; }
 {digit}+        { SAVE_NODE(INT); return INT; }
