@@ -1,0 +1,50 @@
+//  声明必须在前
+//  语句必须在后
+//  CompSt → { DefList StmtList }
+//  {
+//    DefList   ← 变量定义区
+//    StmtList  ← 执行语句区
+//  }
+
+int main() {
+    int x = 1;
+    int x = 2;
+    
+    float f = 3.14;
+    int i = f;
+
+    int arr[5];
+   
+    int y;
+    
+    int a1;
+    float a2;
+
+    a = 10;
+    b = a + 1;
+
+    arr = 10;           
+    arr[1.5] = 3;       
+    arr[0] = 1 + arr;
+
+    y[0] = 10;   
+
+    a1 = a1 + a2;
+
+
+    if (arr) {         
+        a1 = 1;
+    }
+
+    while (a1) {
+        break;
+        continue;
+    }
+
+    break;              
+    continue;         
+
+
+    return arr;       
+
+}

@@ -39,13 +39,13 @@ void print_tree(struct Node* node, int depth) {
 
     // 1. 打印缩进，让层次感更强（你可以把两个空格换成 "|- " 看起来更酷）
     for (int i = 0; i < depth; i++) {
-        printf("  "); 
+        // printf("  "); 
     }
 
     // 2. 根据节点类型智能打印
     if (node->type == NODE_SYNTAX) {
         // 语法非终结符：打印名字和所在行号
-        printf("%s (%d)\n", node->name, node->line);
+        // printf("%s (%d)\n", node->name, node->line);
     } 
     else if (node->type == NODE_TOKEN) {
         // 词法终结符：判断是否需要打印具体的值
@@ -56,10 +56,10 @@ void print_tree(struct Node* node, int depth) {
             strcmp(node->name, "FLOAT") == 0) {
             
             // 打印带具体值的 Token，例如: "TYPE: int"
-            printf("%s: %s\n", node->name, node->val_str);
+            // printf("%s: %s\n", node->name, node->val_str);
         } else {
             // 其他没有具体值的 Token (比如 IF, WHILE, PLUS, LC)，直接打印名字即可
-            printf("%s\n", node->name);
+            //printf("%s\n", node->name);
         }
     }
 

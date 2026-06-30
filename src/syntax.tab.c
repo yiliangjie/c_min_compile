@@ -425,15 +425,13 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
-         || (defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL \
-             && defined YYSTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
+         || (defined YYSTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
 
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
   yy_state_t yyss_alloc;
   YYSTYPE yyvs_alloc;
-  YYLTYPE yyls_alloc;
 };
 
 /* The size of the maximum gap between one aligned stack and the next.  */
@@ -442,9 +440,8 @@ union yyalloc
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (YYSIZEOF (yy_state_t) + YYSIZEOF (YYSTYPE) \
-             + YYSIZEOF (YYLTYPE)) \
-      + 2 * YYSTACK_GAP_MAXIMUM)
+     ((N) * (YYSIZEOF (yy_state_t) + YYSIZEOF (YYSTYPE)) \
+      + YYSTACK_GAP_MAXIMUM)
 
 # define YYCOPY_NEEDED 1
 
@@ -771,32 +768,6 @@ enum { YYENOMEM = -2 };
    Use YYerror or YYUNDEF. */
 #define YYERRCODE YYUNDEF
 
-/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
-   If N is 0, then set CURRENT to the empty location which ends
-   the previous symbol: RHS[0] (always defined).  */
-
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)                                \
-    do                                                                  \
-      if (N)                                                            \
-        {                                                               \
-          (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;        \
-          (Current).first_column = YYRHSLOC (Rhs, 1).first_column;      \
-          (Current).last_line    = YYRHSLOC (Rhs, N).last_line;         \
-          (Current).last_column  = YYRHSLOC (Rhs, N).last_column;       \
-        }                                                               \
-      else                                                              \
-        {                                                               \
-          (Current).first_line   = (Current).last_line   =              \
-            YYRHSLOC (Rhs, 0).last_line;                                \
-          (Current).first_column = (Current).last_column =              \
-            YYRHSLOC (Rhs, 0).last_column;                              \
-        }                                                               \
-    while (0)
-#endif
-
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-
 
 /* Enable debugging if requested.  */
 #if YYDEBUG
@@ -813,63 +784,6 @@ do {                                            \
 } while (0)
 
 
-/* YYLOCATION_PRINT -- Print the location on the stream.
-   This macro was not mandated originally: define only if we know
-   we won't break user code: when these are the locations we know.  */
-
-# ifndef YYLOCATION_PRINT
-
-#  if defined YY_LOCATION_PRINT
-
-   /* Temporary convenience wrapper in case some people defined the
-      undocumented and private YY_LOCATION_PRINT macros.  */
-#   define YYLOCATION_PRINT(File, Loc)  YY_LOCATION_PRINT(File, *(Loc))
-
-#  elif defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
-
-/* Print *YYLOCP on YYO.  Private, do not rely on its existence. */
-
-YY_ATTRIBUTE_UNUSED
-static int
-yy_location_print_ (FILE *yyo, YYLTYPE const * const yylocp)
-{
-  int res = 0;
-  int end_col = 0 != yylocp->last_column ? yylocp->last_column - 1 : 0;
-  if (0 <= yylocp->first_line)
-    {
-      res += YYFPRINTF (yyo, "%d", yylocp->first_line);
-      if (0 <= yylocp->first_column)
-        res += YYFPRINTF (yyo, ".%d", yylocp->first_column);
-    }
-  if (0 <= yylocp->last_line)
-    {
-      if (yylocp->first_line < yylocp->last_line)
-        {
-          res += YYFPRINTF (yyo, "-%d", yylocp->last_line);
-          if (0 <= end_col)
-            res += YYFPRINTF (yyo, ".%d", end_col);
-        }
-      else if (0 <= end_col && yylocp->first_column < end_col)
-        res += YYFPRINTF (yyo, "-%d", end_col);
-    }
-  return res;
-}
-
-#   define YYLOCATION_PRINT  yy_location_print_
-
-    /* Temporary convenience wrapper in case some people defined the
-       undocumented and private YY_LOCATION_PRINT macros.  */
-#   define YY_LOCATION_PRINT(File, Loc)  YYLOCATION_PRINT(File, &(Loc))
-
-#  else
-
-#   define YYLOCATION_PRINT(File, Loc) ((void) 0)
-    /* Temporary convenience wrapper in case some people defined the
-       undocumented and private YY_LOCATION_PRINT macros.  */
-#   define YY_LOCATION_PRINT  YYLOCATION_PRINT
-
-#  endif
-# endif /* !defined YYLOCATION_PRINT */
 
 
 # define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
@@ -878,7 +792,7 @@ do {                                                                      \
     {                                                                     \
       YYFPRINTF (stderr, "%s ", Title);                                   \
       yy_symbol_print (stderr,                                            \
-                  Kind, Value, Location); \
+                  Kind, Value); \
       YYFPRINTF (stderr, "\n");                                           \
     }                                                                     \
 } while (0)
@@ -890,11 +804,10 @@ do {                                                                      \
 
 static void
 yy_symbol_value_print (FILE *yyo,
-                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep, YYLTYPE const * const yylocationp)
+                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
   FILE *yyoutput = yyo;
   YY_USE (yyoutput);
-  YY_USE (yylocationp);
   if (!yyvaluep)
     return;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
@@ -909,14 +822,12 @@ yy_symbol_value_print (FILE *yyo,
 
 static void
 yy_symbol_print (FILE *yyo,
-                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep, YYLTYPE const * const yylocationp)
+                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
   YYFPRINTF (yyo, "%s %s (",
              yykind < YYNTOKENS ? "token" : "nterm", yysymbol_name (yykind));
 
-  YYLOCATION_PRINT (yyo, yylocationp);
-  YYFPRINTF (yyo, ": ");
-  yy_symbol_value_print (yyo, yykind, yyvaluep, yylocationp);
+  yy_symbol_value_print (yyo, yykind, yyvaluep);
   YYFPRINTF (yyo, ")");
 }
 
@@ -949,7 +860,7 @@ do {                                                            \
 `------------------------------------------------*/
 
 static void
-yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, YYLTYPE *yylsp,
+yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
                  int yyrule)
 {
   int yylno = yyrline[yyrule];
@@ -963,8 +874,7 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, YYLTYPE *yylsp,
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
                        YY_ACCESSING_SYMBOL (+yyssp[yyi + 1 - yynrhs]),
-                       &yyvsp[(yyi + 1) - (yynrhs)],
-                       &(yylsp[(yyi + 1) - (yynrhs)]));
+                       &yyvsp[(yyi + 1) - (yynrhs)]);
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -972,7 +882,7 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, YYLTYPE *yylsp,
 # define YY_REDUCE_PRINT(Rule)          \
 do {                                    \
   if (yydebug)                          \
-    yy_reduce_print (yyssp, yyvsp, yylsp, Rule); \
+    yy_reduce_print (yyssp, yyvsp, Rule); \
 } while (0)
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
@@ -1013,10 +923,9 @@ int yydebug;
 
 static void
 yydestruct (const char *yymsg,
-            yysymbol_kind_t yykind, YYSTYPE *yyvaluep, YYLTYPE *yylocationp)
+            yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
 {
   YY_USE (yyvaluep);
-  YY_USE (yylocationp);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
@@ -1032,12 +941,6 @@ int yychar;
 
 /* The semantic value of the lookahead symbol.  */
 YYSTYPE yylval;
-/* Location data for the lookahead symbol.  */
-YYLTYPE yylloc
-# if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
-  = { 1, 1, 1, 1 }
-# endif
-;
 /* Number of syntax errors so far.  */
 int yynerrs;
 
@@ -1071,11 +974,6 @@ yyparse (void)
     YYSTYPE *yyvs = yyvsa;
     YYSTYPE *yyvsp = yyvs;
 
-    /* The location stack: array, bottom, top.  */
-    YYLTYPE yylsa[YYINITDEPTH];
-    YYLTYPE *yyls = yylsa;
-    YYLTYPE *yylsp = yyls;
-
   int yyn;
   /* The return value of yyparse.  */
   int yyresult;
@@ -1084,14 +982,10 @@ yyparse (void)
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
-  YYLTYPE yyloc;
-
-  /* The locations where the error started and ended.  */
-  YYLTYPE yyerror_range[3];
 
 
 
-#define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N), yylsp -= (N))
+#define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
 
   /* The number of symbols on the RHS of the reduced rule.
      Keep to zero when no symbol should be popped.  */
@@ -1101,7 +995,6 @@ yyparse (void)
 
   yychar = YYEMPTY; /* Cause a token to be read.  */
 
-  yylsp[0] = yylloc;
   goto yysetstate;
 
 
@@ -1140,7 +1033,6 @@ yysetstate:
            memory.  */
         yy_state_t *yyss1 = yyss;
         YYSTYPE *yyvs1 = yyvs;
-        YYLTYPE *yyls1 = yyls;
 
         /* Each stack pointer address is followed by the size of the
            data in use in that stack, in bytes.  This used to be a
@@ -1149,11 +1041,9 @@ yysetstate:
         yyoverflow (YY_("memory exhausted"),
                     &yyss1, yysize * YYSIZEOF (*yyssp),
                     &yyvs1, yysize * YYSIZEOF (*yyvsp),
-                    &yyls1, yysize * YYSIZEOF (*yylsp),
                     &yystacksize);
         yyss = yyss1;
         yyvs = yyvs1;
-        yyls = yyls1;
       }
 # else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
@@ -1172,7 +1062,6 @@ yysetstate:
           YYNOMEM;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
-        YYSTACK_RELOCATE (yyls_alloc, yyls);
 #  undef YYSTACK_RELOCATE
         if (yyss1 != yyssa)
           YYSTACK_FREE (yyss1);
@@ -1181,7 +1070,6 @@ yysetstate:
 
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
-      yylsp = yyls + yysize - 1;
 
       YY_IGNORE_USELESS_CAST_BEGIN
       YYDPRINTF ((stderr, "Stack size increased to %ld\n",
@@ -1235,7 +1123,6 @@ yybackup:
          loop in error recovery. */
       yychar = YYUNDEF;
       yytoken = YYSYMBOL_YYerror;
-      yyerror_range[1] = yylloc;
       goto yyerrlab1;
     }
   else
@@ -1269,7 +1156,6 @@ yybackup:
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
-  *++yylsp = yylloc;
 
   /* Discard the shifted token.  */
   yychar = YYEMPTY;
@@ -1303,434 +1189,432 @@ yyreduce:
      GCC warning that YYVAL may be used uninitialized.  */
   yyval = yyvsp[1-yylen];
 
-  /* Default location. */
-  YYLLOC_DEFAULT (yyloc, (yylsp - yylen), yylen);
-  yyerror_range[1] = yyloc;
+
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
   case 2: /* Program: ExtDefList  */
 #line 41 "src/syntax.y"
                      { 
-    (yyval.node) = create_node("Program", (yyloc).first_line, NODE_SYNTAX, NULL); 
+    (yyval.node) = create_node("Program", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); 
     insert_child((yyval.node), (yyvsp[0].node)); 
     root = (yyval.node); 
 }
-#line 1320 "src/syntax.tab.c"
+#line 1204 "src/syntax.tab.c"
     break;
 
   case 3: /* ExtDefList: %empty  */
 #line 48 "src/syntax.y"
                        { (yyval.node) = NULL; }
-#line 1326 "src/syntax.tab.c"
+#line 1210 "src/syntax.tab.c"
     break;
 
   case 4: /* ExtDefList: ExtDef ExtDefList  */
 #line 49 "src/syntax.y"
                         { 
-        (yyval.node) = create_node("ExtDefList", (yyloc).first_line, NODE_SYNTAX, NULL); 
+        (yyval.node) = create_node("ExtDefList", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL); 
         insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node)); 
     }
-#line 1335 "src/syntax.tab.c"
+#line 1219 "src/syntax.tab.c"
     break;
 
   case 5: /* ExtDef: Specifier FunDec CompSt  */
 #line 55 "src/syntax.y"
                                  {
-    (yyval.node) = create_node("ExtDef", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("ExtDef", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1344 "src/syntax.tab.c"
+#line 1228 "src/syntax.tab.c"
     break;
 
   case 6: /* Specifier: TYPE  */
 #line 61 "src/syntax.y"
                  { 
-    (yyval.node) = create_node("Specifier", (yyloc).first_line, NODE_SYNTAX, NULL); 
+    (yyval.node) = create_node("Specifier", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); 
     insert_child((yyval.node), (yyvsp[0].node)); 
 }
-#line 1353 "src/syntax.tab.c"
+#line 1237 "src/syntax.tab.c"
     break;
 
   case 7: /* FunDec: ID LP VarList RP  */
 #line 68 "src/syntax.y"
                           {
-    (yyval.node) = create_node("FunDec", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("FunDec", (yyvsp[-3].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-3].node)); insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1362 "src/syntax.tab.c"
+#line 1246 "src/syntax.tab.c"
     break;
 
   case 8: /* FunDec: ID LP RP  */
 #line 72 "src/syntax.y"
            {
-    (yyval.node) = create_node("FunDec", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("FunDec", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1371 "src/syntax.tab.c"
+#line 1255 "src/syntax.tab.c"
     break;
 
   case 9: /* VarList: ParamDec  */
 #line 78 "src/syntax.y"
-                   { (yyval.node) = create_node("VarList", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node)); }
-#line 1377 "src/syntax.tab.c"
+                   { (yyval.node) = create_node("VarList", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node)); }
+#line 1261 "src/syntax.tab.c"
     break;
 
   case 10: /* VarList: ParamDec COMMA VarList  */
 #line 79 "src/syntax.y"
                              {
-        (yyval.node) = create_node("VarList", (yyloc).first_line, NODE_SYNTAX, NULL);
+        (yyval.node) = create_node("VarList", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
         insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
     }
-#line 1386 "src/syntax.tab.c"
+#line 1270 "src/syntax.tab.c"
     break;
 
   case 11: /* ParamDec: Specifier VarDec  */
 #line 85 "src/syntax.y"
                             {
-    (yyval.node) = create_node("ParamDec", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("ParamDec", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1395 "src/syntax.tab.c"
+#line 1279 "src/syntax.tab.c"
     break;
 
   case 12: /* CompSt: LC DefList StmtList RC  */
 #line 92 "src/syntax.y"
                                 {
-    (yyval.node) = create_node("CompSt", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("CompSt", (yyvsp[-3].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-3].node)); insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1404 "src/syntax.tab.c"
+#line 1288 "src/syntax.tab.c"
     break;
 
   case 13: /* DefList: %empty  */
 #line 98 "src/syntax.y"
                     { (yyval.node) = NULL; }
-#line 1410 "src/syntax.tab.c"
+#line 1294 "src/syntax.tab.c"
     break;
 
   case 14: /* DefList: Def DefList  */
 #line 99 "src/syntax.y"
                   {
-        (yyval.node) = create_node("DefList", (yyloc).first_line, NODE_SYNTAX, NULL);
+        (yyval.node) = create_node("DefList", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL);
         insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
     }
-#line 1419 "src/syntax.tab.c"
+#line 1303 "src/syntax.tab.c"
     break;
 
   case 15: /* Def: Specifier DecList SEMI  */
 #line 105 "src/syntax.y"
                              {
-    (yyval.node) = create_node("Def", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Def", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1428 "src/syntax.tab.c"
+#line 1312 "src/syntax.tab.c"
     break;
 
   case 16: /* DecList: Dec  */
 #line 111 "src/syntax.y"
-              { (yyval.node) = create_node("DecList", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node)); }
-#line 1434 "src/syntax.tab.c"
+              { (yyval.node) = create_node("DecList", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node)); }
+#line 1318 "src/syntax.tab.c"
     break;
 
   case 17: /* DecList: Dec COMMA DecList  */
 #line 112 "src/syntax.y"
                         {
-        (yyval.node) = create_node("DecList", (yyloc).first_line, NODE_SYNTAX, NULL);
+        (yyval.node) = create_node("DecList", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
         insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
     }
-#line 1443 "src/syntax.tab.c"
+#line 1327 "src/syntax.tab.c"
     break;
 
   case 18: /* Dec: VarDec  */
 #line 118 "src/syntax.y"
              {
-    (yyval.node) = create_node("Dec", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
+    (yyval.node) = create_node("Dec", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1451 "src/syntax.tab.c"
+#line 1335 "src/syntax.tab.c"
     break;
 
   case 19: /* Dec: VarDec ASSIGNOP Exp  */
 #line 121 "src/syntax.y"
                       {
-    (yyval.node) = create_node("Dec", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Dec", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1460 "src/syntax.tab.c"
+#line 1344 "src/syntax.tab.c"
     break;
 
   case 20: /* VarDec: ID  */
 #line 127 "src/syntax.y"
             {
-    (yyval.node) = create_node("VarDec", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
+    (yyval.node) = create_node("VarDec", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1468 "src/syntax.tab.c"
+#line 1352 "src/syntax.tab.c"
     break;
 
   case 21: /* VarDec: VarDec LB INT RB  */
 #line 130 "src/syntax.y"
                    {
-    (yyval.node) = create_node("VarDec", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("VarDec", (yyvsp[-3].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-3].node)); insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1477 "src/syntax.tab.c"
+#line 1361 "src/syntax.tab.c"
     break;
 
   case 22: /* StmtList: %empty  */
 #line 137 "src/syntax.y"
                      { (yyval.node) = NULL; }
-#line 1483 "src/syntax.tab.c"
+#line 1367 "src/syntax.tab.c"
     break;
 
   case 23: /* StmtList: Stmt StmtList  */
 #line 138 "src/syntax.y"
                     {
-        (yyval.node) = create_node("StmtList", (yyloc).first_line, NODE_SYNTAX, NULL);
+        (yyval.node) = create_node("StmtList", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL);
         insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
     }
-#line 1492 "src/syntax.tab.c"
+#line 1376 "src/syntax.tab.c"
     break;
 
   case 24: /* Stmt: Exp SEMI  */
 #line 144 "src/syntax.y"
                 {
-    (yyval.node) = create_node("Stmt", (yyloc).first_line, NODE_SYNTAX, NULL); 
+    (yyval.node) = create_node("Stmt", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL); 
     insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1501 "src/syntax.tab.c"
+#line 1385 "src/syntax.tab.c"
     break;
 
   case 25: /* Stmt: CompSt  */
 #line 148 "src/syntax.y"
          {
-    (yyval.node) = create_node("Stmt", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
+    (yyval.node) = create_node("Stmt", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1509 "src/syntax.tab.c"
+#line 1393 "src/syntax.tab.c"
     break;
 
   case 26: /* Stmt: RETURN Exp SEMI  */
 #line 151 "src/syntax.y"
                   {
-    (yyval.node) = create_node("Stmt", (yyloc).first_line, NODE_SYNTAX, NULL); 
+    (yyval.node) = create_node("Stmt", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL); 
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1518 "src/syntax.tab.c"
+#line 1402 "src/syntax.tab.c"
     break;
 
   case 27: /* Stmt: IF LP Exp RP Stmt  */
 #line 155 "src/syntax.y"
                                           {
-    (yyval.node) = create_node("Stmt", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Stmt", (yyvsp[-4].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-4].node)); insert_child((yyval.node), (yyvsp[-3].node)); insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1527 "src/syntax.tab.c"
+#line 1411 "src/syntax.tab.c"
     break;
 
   case 28: /* Stmt: IF LP Exp RP Stmt ELSE Stmt  */
 #line 159 "src/syntax.y"
                               {
-    (yyval.node) = create_node("Stmt", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Stmt", (yyvsp[-6].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-6].node)); insert_child((yyval.node), (yyvsp[-5].node)); insert_child((yyval.node), (yyvsp[-4].node)); insert_child((yyval.node), (yyvsp[-3].node)); insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1536 "src/syntax.tab.c"
+#line 1420 "src/syntax.tab.c"
     break;
 
   case 29: /* Stmt: WHILE LP Exp RP Stmt  */
 #line 163 "src/syntax.y"
                        {
-    (yyval.node) = create_node("Stmt", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Stmt", (yyvsp[-4].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-4].node)); insert_child((yyval.node), (yyvsp[-3].node)); insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1545 "src/syntax.tab.c"
+#line 1429 "src/syntax.tab.c"
     break;
 
   case 30: /* Stmt: BREAK SEMI  */
 #line 167 "src/syntax.y"
              {
-    (yyval.node) = create_node("Stmt", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Stmt", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1554 "src/syntax.tab.c"
+#line 1438 "src/syntax.tab.c"
     break;
 
   case 31: /* Stmt: CONTINUE SEMI  */
 #line 171 "src/syntax.y"
                 {
-    (yyval.node) = create_node("Stmt", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Stmt", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1563 "src/syntax.tab.c"
+#line 1447 "src/syntax.tab.c"
     break;
 
   case 32: /* Exp: Exp ASSIGNOP Exp  */
 #line 178 "src/syntax.y"
                        {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1572 "src/syntax.tab.c"
+#line 1456 "src/syntax.tab.c"
     break;
 
   case 33: /* Exp: Exp AND Exp  */
 #line 182 "src/syntax.y"
               {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1581 "src/syntax.tab.c"
+#line 1465 "src/syntax.tab.c"
     break;
 
   case 34: /* Exp: Exp OR Exp  */
 #line 186 "src/syntax.y"
              {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1590 "src/syntax.tab.c"
+#line 1474 "src/syntax.tab.c"
     break;
 
   case 35: /* Exp: Exp RELOP Exp  */
 #line 190 "src/syntax.y"
                 {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1599 "src/syntax.tab.c"
+#line 1483 "src/syntax.tab.c"
     break;
 
   case 36: /* Exp: Exp PLUS Exp  */
 #line 194 "src/syntax.y"
                {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1608 "src/syntax.tab.c"
+#line 1492 "src/syntax.tab.c"
     break;
 
   case 37: /* Exp: Exp MINUS Exp  */
 #line 198 "src/syntax.y"
                 {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1617 "src/syntax.tab.c"
+#line 1501 "src/syntax.tab.c"
     break;
 
   case 38: /* Exp: Exp STAR Exp  */
 #line 202 "src/syntax.y"
                {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1626 "src/syntax.tab.c"
+#line 1510 "src/syntax.tab.c"
     break;
 
   case 39: /* Exp: Exp DIV Exp  */
 #line 206 "src/syntax.y"
               {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1635 "src/syntax.tab.c"
+#line 1519 "src/syntax.tab.c"
     break;
 
   case 40: /* Exp: LP Exp RP  */
 #line 210 "src/syntax.y"
             {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1644 "src/syntax.tab.c"
+#line 1528 "src/syntax.tab.c"
     break;
 
   case 41: /* Exp: MINUS Exp  */
 #line 214 "src/syntax.y"
                          {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1653 "src/syntax.tab.c"
+#line 1537 "src/syntax.tab.c"
     break;
 
   case 42: /* Exp: NOT Exp  */
 #line 218 "src/syntax.y"
           {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-1].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1662 "src/syntax.tab.c"
+#line 1546 "src/syntax.tab.c"
     break;
 
   case 43: /* Exp: ID LP Args RP  */
 #line 222 "src/syntax.y"
                 {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-3].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-3].node)); insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1671 "src/syntax.tab.c"
+#line 1555 "src/syntax.tab.c"
     break;
 
   case 44: /* Exp: ID LP RP  */
 #line 226 "src/syntax.y"
            {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1680 "src/syntax.tab.c"
+#line 1564 "src/syntax.tab.c"
     break;
 
   case 45: /* Exp: Exp LB Exp RB  */
 #line 230 "src/syntax.y"
                 {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Exp", (yyvsp[-3].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-3].node)); insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1689 "src/syntax.tab.c"
+#line 1573 "src/syntax.tab.c"
     break;
 
   case 46: /* Exp: ID  */
 #line 234 "src/syntax.y"
      {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
+    (yyval.node) = create_node("Exp", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1697 "src/syntax.tab.c"
+#line 1581 "src/syntax.tab.c"
     break;
 
   case 47: /* Exp: INT  */
 #line 237 "src/syntax.y"
       {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
+    (yyval.node) = create_node("Exp", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1705 "src/syntax.tab.c"
+#line 1589 "src/syntax.tab.c"
     break;
 
   case 48: /* Exp: FLOAT  */
 #line 240 "src/syntax.y"
         {
-    (yyval.node) = create_node("Exp", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
+    (yyval.node) = create_node("Exp", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1713 "src/syntax.tab.c"
+#line 1597 "src/syntax.tab.c"
     break;
 
   case 49: /* Args: Exp COMMA Args  */
 #line 246 "src/syntax.y"
                       {
-    (yyval.node) = create_node("Args", (yyloc).first_line, NODE_SYNTAX, NULL);
+    (yyval.node) = create_node("Args", (yyvsp[-2].node)->line, NODE_SYNTAX, NULL);
     insert_child((yyval.node), (yyvsp[-2].node)); insert_child((yyval.node), (yyvsp[-1].node)); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1722 "src/syntax.tab.c"
+#line 1606 "src/syntax.tab.c"
     break;
 
   case 50: /* Args: Exp  */
 #line 250 "src/syntax.y"
       {
-    (yyval.node) = create_node("Args", (yyloc).first_line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
+    (yyval.node) = create_node("Args", (yyvsp[0].node)->line, NODE_SYNTAX, NULL); insert_child((yyval.node), (yyvsp[0].node));
 }
-#line 1730 "src/syntax.tab.c"
+#line 1614 "src/syntax.tab.c"
     break;
 
 
-#line 1734 "src/syntax.tab.c"
+#line 1618 "src/syntax.tab.c"
 
       default: break;
     }
@@ -1751,7 +1635,6 @@ yyreduce:
   yylen = 0;
 
   *++yyvsp = yyval;
-  *++yylsp = yyloc;
 
   /* Now 'shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
@@ -1781,7 +1664,6 @@ yyerrlab:
       yyerror (YY_("syntax error"));
     }
 
-  yyerror_range[1] = yylloc;
   if (yyerrstatus == 3)
     {
       /* If just tried and failed to reuse lookahead token after an
@@ -1796,7 +1678,7 @@ yyerrlab:
       else
         {
           yydestruct ("Error: discarding",
-                      yytoken, &yylval, &yylloc);
+                      yytoken, &yylval);
           yychar = YYEMPTY;
         }
     }
@@ -1850,9 +1732,9 @@ yyerrlab1:
       if (yyssp == yyss)
         YYABORT;
 
-      yyerror_range[1] = *yylsp;
+
       yydestruct ("Error: popping",
-                  YY_ACCESSING_SYMBOL (yystate), yyvsp, yylsp);
+                  YY_ACCESSING_SYMBOL (yystate), yyvsp);
       YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -1862,9 +1744,6 @@ yyerrlab1:
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 
-  yyerror_range[2] = yylloc;
-  ++yylsp;
-  YYLLOC_DEFAULT (*yylsp, yyerror_range, 2);
 
   /* Shift the error token.  */
   YY_SYMBOL_PRINT ("Shifting", YY_ACCESSING_SYMBOL (yyn), yyvsp, yylsp);
@@ -1908,7 +1787,7 @@ yyreturnlab:
          user semantic actions for why this is necessary.  */
       yytoken = YYTRANSLATE (yychar);
       yydestruct ("Cleanup: discarding lookahead",
-                  yytoken, &yylval, &yylloc);
+                  yytoken, &yylval);
     }
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYABORT or YYACCEPT.  */
@@ -1917,7 +1796,7 @@ yyreturnlab:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp, yylsp);
+                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
@@ -1938,14 +1817,25 @@ void yyerror(const char *s) {
 int main(int argc, char** argv) {
     if (argc > 1) {
         FILE* f = fopen(argv[1], "r");
-        if (!f) { perror(argv[1]); return 1; }
+        if (!f) {
+            perror(argv[1]);
+            return 1;
+        }
         yyrestart(f);
     }
+
     yylineno = 1;
-    yyparse(); 
+    yyparse();
+
     if (root != NULL) {
         printf("--- 抽象语法树 (AST) ---\n");
         print_tree(root, 0);
+
+        printf("\n--- Semantic Analysis ---\n");
+
+        init_semantic();
+        analyze_tree(root);
     }
+
     return 0;
 }

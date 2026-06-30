@@ -17,6 +17,7 @@ id          {letter}({letter}|{digit})*
 relop       ">="|"<="|"=="|"!="|">"|"<"
 
 %%
+"//".* { /* 遇到 // 开头的行，直接忽略，不用做任何动作 */ }
 "\n"            { /* 自动处理行号，留空 */ }
 [ \t\r]+        { /* 忽略空白符 */ }
 
@@ -51,6 +52,7 @@ relop       ">="|"<="|"=="|"!="|">"|"<"
 "]"             { SAVE_NODE(RB); return RB; }
 "{"             { SAVE_NODE(LC); return LC; }
 "}"             { SAVE_NODE(RC); return RC; }
+
 
 .               { printf("Error type A at Line %d: Mysterious characters \'%s\'\n", yylineno, yytext); }
 
