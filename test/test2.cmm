@@ -1,10 +1,6 @@
-//  声明必须在前
-//  语句必须在后
-//  CompSt → { DefList StmtList }
-//  {
-//    DefList   ← 变量定义区
-//    StmtList  ← 执行语句区
-//  }
+void foo(int a) {
+    return a; 
+}
 
 int main() {
     int x = 1;
@@ -31,6 +27,7 @@ int main() {
 
     a1 = a1 + a2;
 
+    add(x + y);
 
     if (arr) {         
         a1 = 1;

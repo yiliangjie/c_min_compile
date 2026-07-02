@@ -33,19 +33,41 @@ void insert_child(struct Node* parent, struct Node* child) {
     }
 }
 
+// 获取当前节点的第一个名字匹配的【子节点】
+struct Node* get_child(struct Node* node, const char* name) {
+    if (!node || !node->child) return NULL;
+    struct Node* temp = node->child;
+    while (temp) {
+        if (strcmp(temp->name, name) == 0) return temp;
+        temp = temp->brother;
+    }
+    return NULL;
+}
+
+// 获取当前节点的第一个名字匹配的【兄弟节点】
+struct Node* get_brother(struct Node* node, const char* name) {
+    if (!node) return NULL;
+    struct Node* temp = node->brother;
+    while (temp) {
+        if (strcmp(temp->name, name) == 0) return temp;
+        temp = temp->brother;
+    }
+    return NULL;
+}
+
 // 递归打印整棵树，depth 用来控制缩进
 void print_tree(struct Node* node, int depth) {
     if (node == NULL) return;
 
     // 1. 打印缩进，让层次感更强（你可以把两个空格换成 "|- " 看起来更酷）
     for (int i = 0; i < depth; i++) {
-        // printf("  "); 
+        printf("  "); 
     }
 
     // 2. 根据节点类型智能打印
     if (node->type == NODE_SYNTAX) {
         // 语法非终结符：打印名字和所在行号
-        // printf("%s (%d)\n", node->name, node->line);
+        printf("%s (%d)\n", node->name, node->line);
     } 
     else if (node->type == NODE_TOKEN) {
         // 词法终结符：判断是否需要打印具体的值
@@ -56,10 +78,10 @@ void print_tree(struct Node* node, int depth) {
             strcmp(node->name, "FLOAT") == 0) {
             
             // 打印带具体值的 Token，例如: "TYPE: int"
-            // printf("%s: %s\n", node->name, node->val_str);
+            printf("%s: %s\n", node->name, node->val_str);
         } else {
             // 其他没有具体值的 Token (比如 IF, WHILE, PLUS, LC)，直接打印名字即可
-            //printf("%s\n", node->name);
+            printf("%s\n", node->name);
         }
     }
 

@@ -24,5 +24,8 @@ typedef struct Node {
 struct Node* create_node(char* name, int line, NodeType type, char* val);
 void insert_child(struct Node* parent, struct Node* child);
 void print_tree(struct Node* root, int depth);
+// --- AST 辅助访问工具 ---
+struct Node* get_child(struct Node* node, const char* name);
+struct Node* get_brother(struct Node* node, const char* name);
 
 #endif

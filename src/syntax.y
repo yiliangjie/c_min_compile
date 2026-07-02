@@ -1,5 +1,7 @@
 %{
 #include "tree.h"
+#include "semantic.h"
+#include "ir.h"
 #include <stdio.h>
 
 void yyerror(const char *s);
@@ -7,6 +9,7 @@ int yylex(void);
 void yyrestart(FILE* f);
 
 extern int yylineno;
+extern int semantic_error_count; // 语义错误计数器
 struct Node* root = NULL; // 语法树根节点
 %}
 
@@ -39,8 +42,14 @@ struct Node* root = NULL; // 语法树根节点
 
 /* 1. 顶层结构 */
 Program : ExtDefList { 
-    $$ = create_node("Program", $1->line, NODE_SYNTAX, NULL); 
-    insert_child($$, $1); 
+    if ($1 == NULL) {
+        fprintf(stderr, "Warning: empty ExtDefList, no top-level definitions parsed.\n");
+        $$ = create_node("Program", yylineno, NODE_SYNTAX, NULL);
+    } else {
+        $$ = create_node("Program", $1->line, NODE_SYNTAX, NULL); 
+        insert_child($$, $1); 
+    }
+    root = $$;  
     root = $$; 
 }
 ;
@@ -52,19 +61,21 @@ ExtDefList : /* 空 */ { $$ = NULL; }
     }
     ;
 
+// 函数定义
 ExtDef : Specifier FunDec CompSt {
     $$ = create_node("ExtDef", $1->line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
 }
 ;
 
+// 类型系统
 Specifier : TYPE { 
     $$ = create_node("Specifier", $1->line, NODE_SYNTAX, NULL); 
     insert_child($$, $1); 
 }
 ;
 
-/* 2. 函数与参数 */
+// 函数结构
 FunDec : ID LP VarList RP {
     $$ = create_node("FunDec", $1->line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4);
@@ -75,6 +86,7 @@ FunDec : ID LP VarList RP {
 }
 ;
 
+// 参数列表
 VarList : ParamDec { $$ = create_node("VarList", $1->line, NODE_SYNTAX, NULL); insert_child($$, $1); }
     | ParamDec COMMA VarList {
         $$ = create_node("VarList", $1->line, NODE_SYNTAX, NULL);
@@ -82,26 +94,28 @@ VarList : ParamDec { $$ = create_node("VarList", $1->line, NODE_SYNTAX, NULL); i
     }
     ;
 
+// 单个参数 ParamDec -> int a, float x
 ParamDec : Specifier VarDec {
     $$ = create_node("ParamDec", $1->line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2);
 }
 ;
 
-/* 3. 复合语句与局部定义 (支持数组和普通变量) */
+// 代码块 (作用域)
 CompSt : LC DefList StmtList RC {
     $$ = create_node("CompSt", $1->line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3); insert_child($$, $4);
 }
 ;
 
+// 变量定义系统
 DefList : /* 空 */ { $$ = NULL; }
     | Def DefList {
         $$ = create_node("DefList", $1->line, NODE_SYNTAX, NULL);
         insert_child($$, $1); insert_child($$, $2);
     }
     ;
-
+// int a, b
 Def : Specifier DecList SEMI {
     $$ = create_node("Def", $1->line, NODE_SYNTAX, NULL);
     insert_child($$, $1); insert_child($$, $2); insert_child($$, $3);
@@ -115,6 +129,7 @@ DecList : Dec { $$ = create_node("DecList", $1->line, NODE_SYNTAX, NULL); insert
     }
     ;
 
+// 变量定义加初始化
 Dec : VarDec {
     $$ = create_node("Dec", $1->line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
@@ -124,6 +139,7 @@ Dec : VarDec {
 }
 ;
 
+// a, arr[10]
 VarDec : ID {
     $$ = create_node("VarDec", $1->line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
@@ -140,11 +156,11 @@ StmtList : /* 空 */ { $$ = NULL; }
         insert_child($$, $1); insert_child($$, $2);
     }
     ;
-
+// a + b;
 Stmt : Exp SEMI {
     $$ = create_node("Stmt", $1->line, NODE_SYNTAX, NULL); 
     insert_child($$, $1); insert_child($$, $2);
-}
+} // 代码块
 | CompSt {
     $$ = create_node("Stmt", $1->line, NODE_SYNTAX, NULL); insert_child($$, $1);
 }
@@ -272,13 +288,35 @@ int main(int argc, char** argv) {
     yyparse();
 
     if (root != NULL) {
-        printf("--- 抽象语法树 (AST) ---\n");
+        printf("--- AST ---\n");
         print_tree(root, 0);
 
         printf("\n--- Semantic Analysis ---\n");
 
         init_semantic();
         analyze_tree(root);
+
+        if (semantic_error_count > 0) {
+            printf("\n🛑 Semantic errors detected. IR generation aborted.\n");
+            return 1; 
+        }
+
+        printf("\n--- Intermediate Code Generation ---\n");
+        printf("Translating AST to IR...\n");
+
+
+        // 2. 触发顶层驱动，遍历 AST 生成 IR 双向链表
+        translate_tree(root); 
+
+        // 3. 决定输出文件名
+        // 如果运行时传了第二个参数（如 ./parser input.cmm output.ir），就用它的名字
+        // 否则默认输出到当前目录下的 "output.ir"
+        const char* ir_output_file = (argc > 2) ? argv[2] : "output.ir";
+
+        // 4. 将链表数据打印到文件中
+        print_ir(ir_output_file);
+        printf("🎉 IR code successfully generated in '%s'!\n", ir_output_file);
+
     }
 
     return 0;
