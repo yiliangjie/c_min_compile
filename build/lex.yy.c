@@ -1,6 +1,6 @@
-#line 2 "src/lex.yy.c"
+#line 2 "build/lex.yy.c"
 
-#line 4 "src/lex.yy.c"
+#line 4 "build/lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -520,8 +520,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "src/lexical.l"
-#line 2 "src/lexical.l"
+#line 1 "src/lexical/lexical.l"
+#line 2 "src/lexical/lexical.l"
 #include "tree.h"
 #include "syntax.tab.h" // 由 Bison 自动生成的头文件
 
@@ -529,9 +529,9 @@ extern int yylineno;
 
 // 辅助宏：将 Flex 抓到的文字打包成树节点传递给 Bison
 #define SAVE_NODE(name) yylval.node = create_node(#name, yylineno, NODE_TOKEN, yytext)
-#line 533 "src/lex.yy.c"
+#line 533 "build/lex.yy.c"
 /* 让 Flex 自动追踪行号位置 */
-#line 535 "src/lex.yy.c"
+#line 535 "build/lex.yy.c"
 
 #define INITIAL 0
 
@@ -748,9 +748,9 @@ YY_DECL
 		}
 
 	{
-#line 19 "src/lexical.l"
+#line 19 "src/lexical/lexical.l"
 
-#line 754 "src/lex.yy.c"
+#line 754 "build/lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -819,176 +819,176 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 20 "src/lexical.l"
+#line 20 "src/lexical/lexical.l"
 { /* 遇到 // 开头的行，直接忽略，不用做任何动作 */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 21 "src/lexical.l"
+#line 21 "src/lexical/lexical.l"
 { /* 自动处理行号，留空 */ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 22 "src/lexical.l"
+#line 22 "src/lexical/lexical.l"
 { /* 忽略空白符 */ }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 24 "src/lexical.l"
+#line 24 "src/lexical/lexical.l"
 { SAVE_NODE(TYPE); return TYPE; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 25 "src/lexical.l"
+#line 25 "src/lexical/lexical.l"
 { SAVE_NODE(STRUCT); return STRUCT; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 26 "src/lexical.l"
+#line 26 "src/lexical/lexical.l"
 { SAVE_NODE(RETURN); return RETURN; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 27 "src/lexical.l"
+#line 27 "src/lexical/lexical.l"
 { SAVE_NODE(IF); return IF; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 28 "src/lexical.l"
+#line 28 "src/lexical/lexical.l"
 { SAVE_NODE(ELSE); return ELSE; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 29 "src/lexical.l"
+#line 29 "src/lexical/lexical.l"
 { SAVE_NODE(WHILE); return WHILE; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 30 "src/lexical.l"
+#line 30 "src/lexical/lexical.l"
 { SAVE_NODE(BREAK); return BREAK; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 31 "src/lexical.l"
+#line 31 "src/lexical/lexical.l"
 { SAVE_NODE(CONTINUE); return CONTINUE; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 33 "src/lexical.l"
+#line 33 "src/lexical/lexical.l"
 { SAVE_NODE(ID); return ID; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 34 "src/lexical.l"
+#line 34 "src/lexical/lexical.l"
 { SAVE_NODE(INT); return INT; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 35 "src/lexical.l"
+#line 35 "src/lexical/lexical.l"
 { SAVE_NODE(FLOAT); return FLOAT; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 37 "src/lexical.l"
+#line 37 "src/lexical/lexical.l"
 { SAVE_NODE(SEMI); return SEMI; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 38 "src/lexical.l"
+#line 38 "src/lexical/lexical.l"
 { SAVE_NODE(COMMA); return COMMA; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 39 "src/lexical.l"
+#line 39 "src/lexical/lexical.l"
 { SAVE_NODE(ASSIGNOP); return ASSIGNOP; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 40 "src/lexical.l"
+#line 40 "src/lexical/lexical.l"
 { SAVE_NODE(RELOP); return RELOP; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 41 "src/lexical.l"
+#line 41 "src/lexical/lexical.l"
 { SAVE_NODE(PLUS); return PLUS; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 42 "src/lexical.l"
+#line 42 "src/lexical/lexical.l"
 { SAVE_NODE(MINUS); return MINUS; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 43 "src/lexical.l"
+#line 43 "src/lexical/lexical.l"
 { SAVE_NODE(STAR); return STAR; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 44 "src/lexical.l"
+#line 44 "src/lexical/lexical.l"
 { SAVE_NODE(DIV); return DIV; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 45 "src/lexical.l"
+#line 45 "src/lexical/lexical.l"
 { SAVE_NODE(AND); return AND; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 46 "src/lexical.l"
+#line 46 "src/lexical/lexical.l"
 { SAVE_NODE(OR); return OR; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 47 "src/lexical.l"
+#line 47 "src/lexical/lexical.l"
 { SAVE_NODE(DOT); return DOT; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 48 "src/lexical.l"
+#line 48 "src/lexical/lexical.l"
 { SAVE_NODE(NOT); return NOT; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 49 "src/lexical.l"
+#line 49 "src/lexical/lexical.l"
 { SAVE_NODE(LP); return LP; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 50 "src/lexical.l"
+#line 50 "src/lexical/lexical.l"
 { SAVE_NODE(RP); return RP; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 51 "src/lexical.l"
+#line 51 "src/lexical/lexical.l"
 { SAVE_NODE(LB); return LB; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 52 "src/lexical.l"
+#line 52 "src/lexical/lexical.l"
 { SAVE_NODE(RB); return RB; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 53 "src/lexical.l"
+#line 53 "src/lexical/lexical.l"
 { SAVE_NODE(LC); return LC; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 54 "src/lexical.l"
+#line 54 "src/lexical/lexical.l"
 { SAVE_NODE(RC); return RC; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 57 "src/lexical.l"
+#line 57 "src/lexical/lexical.l"
 { printf("Error type A at Line %d: Mysterious characters \'%s\'\n", yylineno, yytext); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 59 "src/lexical.l"
+#line 59 "src/lexical/lexical.l"
 ECHO;
 	YY_BREAK
-#line 992 "src/lex.yy.c"
+#line 992 "build/lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2005,7 +2005,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 59 "src/lexical.l"
+#line 59 "src/lexical/lexical.l"
 
 
 int yywrap() {

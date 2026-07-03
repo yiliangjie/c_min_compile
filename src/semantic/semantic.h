@@ -1,7 +1,7 @@
 #ifndef SEMANTIC_H
 #define SEMANTIC_H
 
-#include "tree.h"
+#include "../common/tree.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

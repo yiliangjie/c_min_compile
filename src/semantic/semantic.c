@@ -2,7 +2,7 @@
 
 Type* current_return_type = NULL; 
 int current_loop_depth = 0;        
-int current_scope_depth = 0; // 💥 新增：全局作用域深度为 0
+int current_scope_depth = 0; // 新增：全局作用域深度为 0
 int semantic_error_count = 0;
 FieldList* symbol_table[HASH_SIZE];
 
@@ -198,12 +198,12 @@ void handle_extdef(struct Node* extdef_node) {
             insert_symbol(func_name, func_type); // 此时处于全局，depth 自动为 0
         }
 
-        // 6. 💥 核心 Scope 衔接：解析函数体（CompSt）
+        // 6. 核心 Scope 衔接：解析函数体（CompSt）
         struct Node* compst = get_brother(fundec, "CompSt");
         if (compst) {
             enter_scope(); // 进入函数体内层作用域，depth 变为 1
             
-            // 💥 关键：把刚才收集到的形参正式注入到函数的局部作用域（depth = 1）
+            // 关键：把刚才收集到的形参正式注入到函数的局部作用域（depth = 1）
             FieldList* param = func_type->u.function.params;
             while (param) {
                 // 检查形参之间是否有重名 (形参同层查重)
@@ -216,7 +216,7 @@ void handle_extdef(struct Node* extdef_node) {
                 param = param->next;
             }
             
-            // 💥 遍历函数体内部：跳过 CompSt 节点自身（避免重复触发 enter_scope），直接解析其子节点
+            // 遍历函数体内部：跳过 CompSt 节点自身（避免重复触发 enter_scope），直接解析其子节点
             analyze_tree(compst->child); 
             
             exit_scope(); // 离开函数体，销毁形参和函数内的全部局部变量
@@ -239,7 +239,7 @@ void handle_def(struct Node* def_node) {
         char* var_name = NULL;
         Type* final_type = parse_vardec(vardec, base_type, &var_name);
         
-        // 💥 关键修复：只查当前作用域！这样局部变量覆盖全局变量就不会报错了
+        // 关键修复：只查当前作用域！这样局部变量覆盖全局变量就不会报错了
         if (lookup_symbol_current_scope(var_name) != NULL) {
             printf("Error type 3 at Line %d: Redefined variable \"%s\".\n", def_node->line, var_name);
             semantic_error_count++;
@@ -289,7 +289,7 @@ void handle_stmt(struct Node* stmt_node) {
         struct Node* exp_node = first->brother->brother;
         Type* cond_type = handle_exp(exp_node);
         
-        // 💥 添加数组作为条件的拦截！
+        // 添加数组作为条件的拦截！
         if (cond_type && cond_type->kind == ARRAY) {
             printf("Error type 6 at Line %d: Condition cannot be an array.\n", exp_node->line);
             semantic_error_count++;
@@ -334,7 +334,7 @@ Type* handle_exp(struct Node* exp_node) {
     }
     
     // ==========================================
-    // 💥 核心补全：处理函数调用 (Exp -> ID LP Args RP 或 ID LP RP)
+    // 核心补全：处理函数调用 (Exp -> ID LP Args RP 或 ID LP RP)
     // ==========================================
     if (strcmp(c1->name, "ID") == 0 && c1->brother && strcmp(c1->brother->name, "LP") == 0) {
         char* func_name = c1->val_str;
@@ -446,7 +446,7 @@ void analyze_tree(struct Node* node) {
         analyze_tree(node->brother); 
         return;
     }
-    // 💥 拦截大括号，控制 Scope 进出
+    // 拦截大括号，控制 Scope 进出
     else if (strcmp(node->name, "CompSt") == 0) {
         enter_scope();
         analyze_tree(node->child); // 遍历块内的局部变量和语句

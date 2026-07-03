@@ -1,15 +1,88 @@
-FUNCTION test_func :
+FUNCTION compute_magic :
+PARAM a
+PARAM b
+i := #0
+result := #1
 LABEL label0 :
-IF t0 != #0 GOTO label2
-GOTO label1
+t0 := i
+t1 := #10
+IF t0 < t1 GOTO label1
+GOTO label2
 LABEL label1 :
-t3 := #5
-t2 := #0 - t3
-IF t1 == t2 GOTO label3
+t4 := &arr
+t5 := i
+t6 := t5 * #4
+t7 := t4 + t6
+t2 := *t7
+t3 := #0
+IF t2 == t3 GOTO label3
 GOTO label4
 LABEL label3 :
+t9 := i
+t10 := #1
+t8 := t9 + t10
+i := t8
+GOTO label0
 GOTO label5
 LABEL label4 :
+t12 := result
+t14 := &arr
+t15 := i
+t16 := t15 * #4
+t17 := t14 + t16
+t13 := *t17
+t11 := t12 * t13
+result := t11
 LABEL label5 :
+t18 := result
+t19 := #100
+IF t18 > t19 GOTO label6
+GOTO label7
+LABEL label6 :
+GOTO label2
+LABEL label7 :
+t21 := i
+t22 := #1
+t20 := t21 + t22
+i := t20
 GOTO label0
 LABEL label2 :
+t23 := result
+RETURN t23
+FUNCTION main :
+global_x := #5
+DEC array 40
+t24 := &array
+t25 := #0
+t26 := t25 * #4
+t27 := t24 + t26
+t28 := #1
+*t27 := t28
+t29 := &array
+t30 := #1
+t31 := t30 * #4
+t32 := t29 + t31
+t33 := #2
+*t32 := t33
+t35 := global_x
+ARG t35
+t36 := #3.14
+ARG t36
+t37 := array
+ARG t37
+t34 := CALL compute_magic
+check := t34
+global_x := #1.23
+t39 := global_x
+t40 := #2
+t38 := t39 + t40
+shadow_check := t38
+global_x := #100
+t41 := &array
+t42 := #2
+t43 := t42 * #4
+t44 := t41 + t43
+t45 := global_x
+*t44 := t45
+t46 := #0
+RETURN t46

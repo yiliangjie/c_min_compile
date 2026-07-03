@@ -12,6 +12,7 @@ static int label_counter = 0;
 Operand* new_temp() {
     Operand* op = (Operand*)malloc(sizeof(Operand));
     op->kind = OP_TEMPORARY;
+    op->is_float = 0;
     op->u.no = temp_counter++;
     return op;
 }
@@ -20,15 +21,26 @@ Operand* new_temp() {
 Operand* new_label() {
     Operand* op = (Operand*)malloc(sizeof(Operand));
     op->kind = OP_LABEL;
+    op->is_float = 0;
     op->u.no = label_counter++;
     return op;
 }
 
-// 生成一个常量操作数
+// 生成一个整型常量操作数
 Operand* new_constant(int val) {
     Operand* op = (Operand*)malloc(sizeof(Operand));
     op->kind = OP_CONSTANT;
+    op->is_float = 0;
     op->u.val = val;
+    return op;
+}
+
+// 生成一个浮点型常量操作数
+Operand* new_float_constant(float val) {
+    Operand* op = (Operand*)malloc(sizeof(Operand));
+    op->kind = OP_CONSTANT;
+    op->is_float = 1;
+    op->u.fval = val;
     return op;
 }
 
@@ -36,6 +48,7 @@ Operand* new_constant(int val) {
 Operand* new_variable(char* name) {
     Operand* op = (Operand*)malloc(sizeof(Operand));
     op->kind = OP_VARIABLE;
+    op->is_float = 0;
     op->u.name = strdup(name);
     return op;
 }
@@ -62,7 +75,10 @@ static void print_operand(FILE* f, Operand* op) {
     if (!op) return;
     switch (op->kind) {
         case OP_VARIABLE:  fprintf(f, "%s", op->u.name); break;
-        case OP_CONSTANT:  fprintf(f, "#%d", op->u.val); break;
+        case OP_CONSTANT:
+            if (op->is_float) fprintf(f, "#%g", op->u.fval);
+            else fprintf(f, "#%d", op->u.val);
+            break;
         case OP_TEMPORARY: fprintf(f, "t%d", op->u.no); break;
         case OP_LABEL:     fprintf(f, "label%d", op->u.no); break;
         case OP_ADDRESS:   fprintf(f, "*t%d", op->u.no); break; // 简化处理

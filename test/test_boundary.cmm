@@ -1,0 +1,57 @@
+
+// 1. 测试多参数、复杂控制流与多层返回路径的正确性
+int compute_magic(int a, float b, int arr[10]) {
+    int i = 0;
+    int result = 1;
+    
+    // 测试复杂的控制流嵌套 (WHILE 内嵌 IF-ELSE)
+    while (i < 10) {
+        if (arr[i] == 0) {
+            i = i + 1;
+            continue; // 测试当前循环深度下的 continue
+        } else {
+            result = result * arr[i];
+        }
+        
+        if (result > 100) {
+            break; // 测试当前循环深度下的 break
+        }
+        i = i + 1;
+    }
+    
+    // 测试隐式 Void/类型转换边界（你的代码里对 INT/FLOAT 表达式有严格的等价要求）
+    return result; 
+}
+
+// 2. 测试终极魔鬼：多层作用域嵌套 + 变量重名遮蔽 (Shadowing)
+int main() {
+    int global_x = 5;
+    int array[10];
+    int check;
+    
+    // 初始化数组（你的代码支持单层局部 Dec 赋值和普通算术）
+    array[0] = 1;
+    array[1] = 2;
+    
+    // 【成功】正确的函数调用：参数数量一致(3个)，类型严格匹配(int, float, array)
+    check = compute_magic(global_x, 3.14, array);
+    
+    // 进入局部作用域大括号 (CompSt)
+    {
+        float global_x = 1.23; // 【成功】嵌套遮蔽！此时最内层的 global_x 变成了 float
+        float shadow_check;
+        
+        // 【成功】此时 left 和 right 都是最内层的 float，符合 type_equal
+        shadow_check = global_x + 2.0; 
+        
+        // 再次进入一层匿名大括号
+        {
+            int global_x = 100; // 【成功】第三层遮蔽，global_x 变回了 int
+            array[2] = global_x; // 【成功】右边是 int，左边数组元素是 int，类型匹配
+        }
+        // 离开最内层，global_x 恢复为上一层的 float (1.23)
+    }
+    // 离开第二层，global_x 恢复为最外层的 int (5)
+    
+    return 0; // 检查 main 函数的 int 返回
+}

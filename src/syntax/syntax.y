@@ -1,7 +1,7 @@
 %{
-#include "tree.h"
-#include "semantic.h"
-#include "ir.h"
+#include "../common/tree.h"
+#include "../semantic/semantic.h"
+#include "../ir/ir.h"
 #include <stdio.h>
 
 void yyerror(const char *s);
@@ -274,7 +274,7 @@ void yyerror(const char *s) {
     fprintf(stderr, "Error type B at Line %d: %s\n", yylineno, s);
 }
 
-int main(int argc, char** argv) {
+/* int main(int argc, char** argv) {
     if (argc > 1) {
         FILE* f = fopen(argv[1], "r");
         if (!f) {
@@ -320,4 +320,4 @@ int main(int argc, char** argv) {
     }
 
     return 0;
-}
+} */

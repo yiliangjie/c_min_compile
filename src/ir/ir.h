@@ -1,7 +1,7 @@
 #ifndef IR_H
 #define IR_H
 
-#include "tree.h"
+#include "../common/tree.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,14 +10,16 @@
 typedef struct Operand_ {
     enum { 
         OP_VARIABLE,    // 普通用户变量 (如 x, y)
-        OP_CONSTANT,    // 整数常量 (如 #5)
+        OP_CONSTANT,    // 整数或浮点数常量 (如 #5, #3.14)
         OP_TEMPORARY,   // 编译器生成的临时变量 (如 t0, t1)
         OP_LABEL,       // 跳转标签 (如 label0, label1)
         OP_ADDRESS,     // 地址/指针变量 (用于数组和结构体传参或访问)
     } kind;
+    int is_float;       // 仅在 kind == OP_CONSTANT 时有意义: 1 表示 u.fval 有效, 0 表示 u.val 有效
     union {
         char* name;     // 变量名
-        int val;        // 常数值
+        int val;        // 整型常数值
+        float fval;     // 浮点型常数值
         int no;         // 临时变量或标签的编号
     } u;
 } Operand;
@@ -68,6 +70,7 @@ extern InterCodes* ir_tail;
 Operand* new_temp();
 Operand* new_label();
 Operand* new_constant(int val);
+Operand* new_float_constant(float val);
 Operand* new_variable(char* name);
 
 void append_code(InterCode* code);
